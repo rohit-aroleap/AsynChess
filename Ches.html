@@ -3,200 +3,210 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Async Chess</title>
+<title>AsynChess</title>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#12121f;color:#e8e8f0;font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:16px}
-h1{font-size:1.8rem;color:#d4c8ff;margin-bottom:4px}
-.version{color:#3a3a60;font-size:.72rem;margin-bottom:6px;letter-spacing:.5px}
-.sub{color:#6060a0;font-size:.9rem;margin-bottom:28px}
+body{background:#0d1117;color:#c9d1d9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 48px}
 
-/* HOME */
-#view-home{display:flex;flex-direction:column;align-items:center;width:100%;max-width:440px}
-.card{background:#1a1a30;border:1px solid #2a2a48;border-radius:12px;padding:22px;width:100%;margin-bottom:14px}
-.card h2{font-size:1rem;color:#b0a8d8;margin-bottom:14px}
+/* Header */
+.hdr{text-align:center;margin-bottom:22px}
+.hdr h1{font-size:1.65rem;font-weight:700;color:#f0f6fc;letter-spacing:-.5px}
+.hdr .ver{font-size:.68rem;color:#30363d;margin:3px 0 5px;font-family:monospace;letter-spacing:.5px}
+.hdr .tag{font-size:.83rem;color:#6e7681}
+
+/* ── HOME ── */
+#view-home{display:flex;flex-direction:column;align-items:center;width:100%;max-width:400px}
+.card{width:100%;background:#161b22;border:1px solid #30363d;border-radius:12px;padding:20px;margin-bottom:12px}
+.card-title{font-size:.72rem;font-weight:600;color:#6e7681;text-transform:uppercase;letter-spacing:.7px;margin-bottom:14px}
 .time-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
-.time-btn{background:#0d2540;border:2px solid #1a3a5a;border-radius:8px;color:#d0d0f0;padding:10px 4px;cursor:pointer;font-size:.85rem;transition:all .15s}
-.time-btn:hover{background:#1a3a5a}
-.time-btn.sel{background:#7c3aed;border-color:#7c3aed;color:#fff}
-.btn{background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:12px 20px;font-size:1rem;cursor:pointer;width:100%;font-weight:600;transition:background .15s}
-.btn:hover{background:#6d28d9}
-.btn.ghost{background:#0d2540;margin-top:8px}
-.btn.ghost:hover{background:#1a3a5a}
+.tbtn{background:#0d1117;border:1px solid #30363d;border-radius:8px;color:#8b949e;padding:12px 4px;cursor:pointer;font-size:.8rem;transition:all .15s;text-align:center;line-height:1.3}
+.tbtn .num{display:block;font-size:1.2rem;font-weight:700;color:#c9d1d9}
+.tbtn:hover{border-color:#388bfd;color:#58a6ff}
+.tbtn:hover .num{color:#58a6ff}
+.tbtn.sel{background:#1c2d3f;border-color:#388bfd}
+.tbtn.sel .num{color:#58a6ff}
+.btn-primary{width:100%;background:#238636;color:#fff;border:1px solid #2ea043;border-radius:8px;padding:11px 16px;font-size:.93rem;font-weight:600;cursor:pointer;transition:background .15s}
+.btn-primary:hover{background:#2ea043}
 .join-row{display:flex;gap:8px}
-.join-row input{flex:1;background:#0a0a18;border:1px solid #2a2a48;border-radius:8px;color:#e8e8f0;padding:11px;font-size:.95rem}
-.join-row .btn{width:auto}
-.setup-note{color:#3a3a60;font-size:.75rem;text-align:center;margin-top:12px;line-height:1.5}
-.setup-note code{color:#5050a0;background:#0a0a18;padding:1px 5px;border-radius:4px}
+.join-row input{flex:1;background:#0d1117;border:1px solid #30363d;border-radius:8px;color:#c9d1d9;padding:10px 12px;font-size:.9rem}
+.join-row input:focus{outline:none;border-color:#388bfd}
+.join-row .btn-primary{width:auto;padding:10px 18px;white-space:nowrap}
+.cfg-note{color:#30363d;font-size:.73rem;text-align:center;margin-top:10px;line-height:1.6}
+.cfg-note code{color:#388bfd;background:#161b22;padding:1px 5px;border-radius:4px}
 
-/* GAME */
+/* ── GAME ── */
 #view-game{display:flex;flex-direction:column;align-items:center;width:100%}
-.game-meta{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:.8rem;color:#5050a0}
-.gid{background:#1a1a30;border:1px solid #2a2a48;border-radius:5px;padding:3px 10px;font-family:monospace;color:#8080c0;cursor:pointer;letter-spacing:1px}
-.gid:hover{border-color:#7c3aed}
+.game-meta{display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:.78rem;color:#6e7681}
+.gid-pill{font-family:monospace;font-size:.82rem;background:#161b22;border:1px solid #30363d;border-radius:20px;padding:3px 12px;color:#8b949e;cursor:pointer;letter-spacing:1px}
+.gid-pill:hover{border-color:#388bfd;color:#58a6ff}
+.you-label{color:#e3b341;font-weight:600}
 
 /* Player bars */
-.pbar{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:540px;padding:10px 14px;background:#1a1a30;border:2px solid transparent;border-radius:9px;margin:5px 0;transition:border-color .3s}
-.pbar.active-turn{border-color:#7c3aed}
-.pname{display:flex;align-items:center;gap:9px;font-weight:600;font-size:.9rem}
-.dot{width:13px;height:13px;border-radius:50%}
-.dot.w{background:#f0d9b5;border:2px solid #b58863}
-.dot.b{background:#1a1a1a;border:2px solid #888}
-.timer{font-size:1.5rem;font-weight:700;font-family:monospace;color:#d0d0f0;min-width:60px;text-align:right}
-.timer.low{color:#f87171;animation:blink 1s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.pbar{display:flex;align-items:center;justify-content:space-between;background:#161b22;border:1px solid #21262d;border-radius:10px;padding:10px 16px;margin:4px 0;transition:border-color .25s,background .25s;width:100%;max-width:512px}
+.pbar.active-bar{border-color:#2ea043;background:#0d1f12}
+.pinfo{display:flex;align-items:center;gap:11px}
+.av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.av-w{background:#f5deb3;border:2px solid #c49a3c}
+.av-b{background:#1c1c1c;border:2px solid #6e5a2a}
+.pname{font-weight:600;font-size:.88rem;color:#e6edf3}
+.ptag{font-size:.7rem;color:#6e7681;margin-top:1px}
+.timer{font-size:1.55rem;font-weight:700;font-family:'SF Mono','Fira Code','Courier New',monospace;color:#6e7681;letter-spacing:1px;transition:color .3s}
+.pbar.active-bar .timer{color:#3fb950}
+.timer.danger{color:#f85149!important;animation:blink .7s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
 
-/* Board area */
-.board-wrap{position:relative;margin:5px 0;line-height:0}
-.board{display:grid;grid-template-columns:repeat(8,62px);grid-template-rows:repeat(8,62px);border:3px solid #2a2a48;border-radius:3px}
-.sq{width:62px;height:62px;display:flex;align-items:center;justify-content:center;font-size:44px;cursor:pointer;position:relative}
-.sq.lt{background:#f0d9b5}
-.sq.dk{background:#b58863}
-.sq.sel{background:#4ade80 !important}
-.sq.lf{background:rgba(250,204,21,.4) !important}
-.sq.lt2{background:rgba(250,204,21,.6) !important}
-.sq.chk{background:rgba(239,68,68,.55) !important}
-.sq.vm::after{content:'';position:absolute;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.28);pointer-events:none}
-.sq.vc::after{content:'';position:absolute;width:60px;height:60px;border-radius:50%;border:5px solid rgba(0,0,0,.28);background:transparent;pointer-events:none}
+/* Board */
+.board-wrap{position:relative;margin:4px 0;width:100%;max-width:512px}
+#chessboard{width:100%}
+.board-b72b1{border-radius:3px!important}
+
+/* Square highlights */
+.square-55d63{position:relative}
+.hl-sel{background:rgba(80,200,120,.45)!important}
+.hl-lf{background:rgba(240,200,50,.35)!important}
+.hl-lt{background:rgba(240,200,50,.6)!important}
+.hl-mv::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:32%;height:32%;border-radius:50%;background:rgba(0,0,0,.25);pointer-events:none;z-index:5}
+.hl-cap::after{content:'';position:absolute;inset:0;border-radius:50%;border:5px solid rgba(0,0,0,.22);pointer-events:none;z-index:5}
 
 /* Overlay */
-.overlay{position:absolute;inset:0;background:#0e0e1c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:10;border-radius:1px}
-.ov-icon{font-size:2.8rem}
-.ov-title{font-size:1.15rem;font-weight:700;color:#d4c8ff;text-align:center;padding:0 16px}
-.ov-sub{color:#6060a0;font-size:.85rem;text-align:center;max-width:220px;line-height:1.5}
-.btn-start{background:#16a34a;color:#fff;border:none;border-radius:9px;padding:13px 32px;font-size:1rem;font-weight:700;cursor:pointer;transition:background .15s}
-.btn-start:hover{background:#15803d}
+.overlay{position:absolute;inset:0;background:rgba(13,17,23,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;z-index:50;border-radius:3px}
+.ov-icon{font-size:3rem;line-height:1}
+.ov-title{font-size:1.15rem;font-weight:700;color:#f0f6fc;text-align:center}
+.ov-sub{font-size:.82rem;color:#6e7681;text-align:center;max-width:240px;line-height:1.65}
+.ov-last{font-size:.75rem;color:#484f58;font-family:monospace}
+.btn-start{background:#238636;color:#fff;border:1px solid #2ea043;border-radius:9px;padding:13px 36px;font-size:.95rem;font-weight:700;cursor:pointer;transition:background .15s,transform .1s;letter-spacing:.2px}
+.btn-start:hover{background:#2ea043;transform:translateY(-1px)}
 
 /* Status */
-.status-bar{width:100%;max-width:540px;min-height:34px;background:#1a1a30;border:1px solid #2a2a48;border-radius:7px;padding:7px 14px;font-size:.85rem;color:#9090c0;text-align:center;margin-top:4px}
+.sbar{width:100%;max-width:512px;min-height:28px;font-size:.8rem;color:#6e7681;text-align:center;padding:4px 0}
+.sbar.warn{color:#e3b341;font-weight:500}
+.sbar.chk{color:#f85149;font-weight:600}
 
 /* Controls */
-.controls{display:flex;gap:8px;margin-top:10px;width:100%;max-width:540px}
-.btn-share{flex:1;background:#0a0a18;border:1px solid #2a2a48;border-radius:8px;color:#6060a0;padding:9px 12px;font-size:.8rem;cursor:pointer;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.btn-share:hover{border-color:#7c3aed;color:#9090c0}
-.btn-resign{background:#2a0010;border:1px solid #4a0020;color:#f87171;border-radius:8px;padding:9px 16px;cursor:pointer;font-size:.85rem}
-.btn-resign:hover{background:#3a0018}
-.btn-newgame{background:#0d2540;border:1px solid #1a3a5a;color:#90b0d0;border-radius:8px;padding:9px 16px;cursor:pointer;font-size:.85rem}
-.btn-newgame:hover{background:#1a3a5a}
+.ctrls{display:flex;gap:8px;width:100%;max-width:512px;margin:2px 0}
+.btn-share{flex:1;background:#161b22;border:1px solid #30363d;border-radius:8px;color:#6e7681;padding:8px 12px;font-size:.78rem;cursor:pointer;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-share:hover{border-color:#388bfd;color:#58a6ff}
+.btn-resign{background:transparent;border:1px solid #30363d;border-radius:8px;color:#da3633;padding:8px 14px;cursor:pointer;font-size:.78rem}
+.btn-resign:hover{background:#1a0b0b;border-color:#da3633}
+.btn-new{background:transparent;border:1px solid #30363d;border-radius:8px;color:#388bfd;padding:8px 14px;cursor:pointer;font-size:.78rem}
+.btn-new:hover{border-color:#388bfd}
 
-/* Move history */
-.hist{background:#1a1a30;border:1px solid #2a2a48;border-radius:9px;padding:12px 14px;width:100%;max-width:540px;margin-top:10px;max-height:130px;overflow-y:auto}
-.hist-label{font-size:.72rem;color:#4040708;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;color:#505080}
-.hist-grid{display:grid;grid-template-columns:28px 1fr 1fr;gap:3px;font-size:.88rem}
-.mn{color:#404070}
-.ms{color:#b0a8d8}
+/* History */
+.hist{width:100%;max-width:512px;background:#161b22;border:1px solid #21262d;border-radius:10px;padding:11px 14px;max-height:130px;overflow-y:auto;margin:4px 0}
+.hist::-webkit-scrollbar{width:4px}
+.hist::-webkit-scrollbar-thumb{background:#30363d;border-radius:4px}
+.hlabel{font-size:.68rem;font-weight:600;color:#484f58;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.mgrid{display:grid;grid-template-columns:22px 1fr 1fr;gap:2px 8px}
+.mn{color:#484f58;font-size:.8rem}
+.ms{color:#c9d1d9;font-family:monospace;font-size:.83rem}
 
 /* Promo modal */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:100}
-.modal{background:#1a1a30;border:1px solid #2a2a48;border-radius:12px;padding:24px;text-align:center}
-.modal h3{margin-bottom:16px;color:#d4c8ff}
+.promo-bg{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(4px)}
+.promo-box{background:#161b22;border:1px solid #30363d;border-radius:14px;padding:24px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.promo-box h3{margin-bottom:16px;color:#f0f6fc;font-size:.95rem}
 .promo-row{display:flex;gap:8px}
-.pbtn{background:#0d2540;border:2px solid #1a3a5a;border-radius:8px;width:68px;height:68px;font-size:46px;cursor:pointer}
-.pbtn:hover{background:#1a3a5a}
+.ppbtn{width:70px;height:70px;background:#0d1117;border:2px solid #30363d;border-radius:10px;cursor:pointer;padding:4px;overflow:hidden;transition:border-color .15s}
+.ppbtn:hover{border-color:#388bfd}
+.ppbtn img{width:100%;height:100%}
 
 .hidden{display:none!important}
 </style>
 </head>
 <body>
 
-<h1>♟ Async Chess</h1>
-<p class="version">v1.001</p>
-<p class="sub">Play turn-by-turn across any timezone</p>
-
-<!-- HOME VIEW -->
-<div id="view-home">
-  <div class="card">
-    <h2>Create New Game</h2>
-    <p style="color:#505080;font-size:.82rem;margin-bottom:11px">Time per player:</p>
-    <div class="time-grid" id="time-grid">
-      <button class="time-btn" data-ms="300000">5 min</button>
-      <button class="time-btn sel" data-ms="600000">10 min</button>
-      <button class="time-btn" data-ms="900000">15 min</button>
-      <button class="time-btn" data-ms="1800000">30 min</button>
-    </div>
-    <button class="btn" id="btn-create">Create Game (You play White)</button>
-  </div>
-
-  <div class="card">
-    <h2>Join a Game</h2>
-    <div class="join-row">
-      <input id="join-input" type="text" placeholder="Game code e.g. ABC123" maxlength="8" style="text-transform:uppercase" />
-      <button class="btn" id="btn-join" style="width:auto">Join</button>
-    </div>
-  </div>
-
-  <p class="setup-note">
-    Requires Firebase Firestore — open <code>chess.html</code> and fill in<br>
-    <code>FIREBASE_CONFIG</code> with your project credentials.
-  </p>
+<div class="hdr">
+  <h1>♟ AsynChess</h1>
+  <p class="ver">v1.002</p>
+  <p class="tag">Play turn-by-turn across any timezone</p>
 </div>
 
-<!-- GAME VIEW -->
+<!-- HOME -->
+<div id="view-home">
+  <div class="card">
+    <p class="card-title">New Game — Time per player</p>
+    <div class="time-grid" id="time-grid">
+      <button class="tbtn" data-ms="300000"><span class="num">5</span>min</button>
+      <button class="tbtn sel" data-ms="600000"><span class="num">10</span>min</button>
+      <button class="tbtn" data-ms="900000"><span class="num">15</span>min</button>
+      <button class="tbtn" data-ms="1800000"><span class="num">30</span>min</button>
+    </div>
+    <button class="btn-primary" id="btn-create">Create Game — You play White ♔</button>
+  </div>
+  <div class="card">
+    <p class="card-title">Join Existing Game</p>
+    <div class="join-row">
+      <input id="join-input" type="text" placeholder="Enter game code" maxlength="8" style="text-transform:uppercase"/>
+      <button class="btn-primary" id="btn-join">Join →</button>
+    </div>
+  </div>
+  <p class="cfg-note">Requires Firebase Firestore — fill in <code>FIREBASE_CONFIG</code> in the source.</p>
+</div>
+
+<!-- GAME -->
 <div id="view-game" class="hidden">
   <div class="game-meta">
     <span>Game</span>
-    <span class="gid" id="gid-label" title="Click to copy"></span>
-    <span id="color-label" style="color:#7c3aed"></span>
+    <span class="gid-pill" id="gid-label"></span>
+    <span class="you-label" id="color-label"></span>
   </div>
 
   <div class="pbar" id="bar-opp">
-    <div class="pname">
-      <div class="dot" id="dot-opp"></div>
-      <span id="lbl-opp">Opponent</span>
+    <div class="pinfo">
+      <div class="av" id="av-opp"></div>
+      <div><div class="pname" id="pname-opp">Opponent</div><div class="ptag" id="ptag-opp"></div></div>
     </div>
-    <div class="timer" id="t-opp">10:00</div>
+    <div class="timer" id="t-opp">—:——</div>
   </div>
 
-  <div class="board-wrap">
-    <div class="board" id="board"></div>
+  <div class="board-wrap" id="board-wrap">
+    <div id="chessboard"></div>
     <div class="overlay" id="overlay">
       <div class="ov-icon" id="ov-icon">⏳</div>
       <div class="ov-title" id="ov-title">Loading…</div>
       <div class="ov-sub" id="ov-sub"></div>
-      <button class="btn-start hidden" id="btn-start">▶ Start My Clock</button>
+      <div class="ov-last hidden" id="ov-last"></div>
+      <button class="btn-start hidden" id="btn-start">▶  Start My Clock</button>
     </div>
   </div>
 
   <div class="pbar" id="bar-me">
-    <div class="pname">
-      <div class="dot" id="dot-me"></div>
-      <span id="lbl-me">You</span>
+    <div class="pinfo">
+      <div class="av" id="av-me"></div>
+      <div><div class="pname" id="pname-me">You</div><div class="ptag" id="ptag-me"></div></div>
     </div>
-    <div class="timer" id="t-me">10:00</div>
+    <div class="timer" id="t-me">—:——</div>
   </div>
 
-  <div class="status-bar" id="status-bar"></div>
+  <div class="sbar" id="sbar"></div>
 
-  <div class="controls">
-    <button class="btn-share" id="btn-share">📋 Copy invite link</button>
-    <button class="btn-newgame hidden" id="btn-newgame">New Game</button>
+  <div class="ctrls">
+    <button class="btn-share" id="btn-share">📋  Copy invite link</button>
+    <button class="btn-new hidden" id="btn-new">New Game</button>
     <button class="btn-resign" id="btn-resign">Resign</button>
   </div>
 
   <div class="hist">
-    <div class="hist-label">Move history</div>
-    <div class="hist-grid" id="hist-grid"></div>
+    <div class="hlabel">Moves</div>
+    <div class="mgrid" id="mgrid"></div>
   </div>
 </div>
 
-<!-- Promotion modal -->
-<div class="modal-bg hidden" id="promo-modal">
-  <div class="modal">
+<!-- Promotion -->
+<div class="promo-bg hidden" id="promo-modal">
+  <div class="promo-box">
     <h3>Promote pawn to:</h3>
     <div class="promo-row" id="promo-row"></div>
   </div>
 </div>
 
 <script>
-// ================================================================
-// FIREBASE CONFIG — Replace all values below.
-// Get from: console.firebase.google.com → Project Settings →
-// Your Apps → SDK setup → Config
-// Also set Firestore rules to allow read/write (test mode is fine).
-// ================================================================
+// ── Firebase config ──
 const FIREBASE_CONFIG = {
   apiKey:            "AIzaSyAXw4AB59Km4N92Y67ODaiOJBmvNxmJdtw",
   authDomain:        "tidal-velocity-275918.firebaseapp.com",
@@ -205,494 +215,341 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "359357212651",
   appId:             "1:359357212651:web:5f0e7e3aaf0f06ca131bae"
 };
+const PIECES = 'https://cdn.jsdelivr.net/npm/@chrisoakman/chessboardjs@1.0.0/img/chesspieces/wikipedia/{piece}.png';
 
-// ================================================================
-// PIECE SYMBOLS
-// ================================================================
-const SYM = {
-  wK:'♔',wQ:'♕',wR:'♖',wB:'♗',wN:'♘',wP:'♙',
-  bK:'♚',bQ:'♛',bR:'♜',bB:'♝',bN:'♞',bP:'♟'
-};
+// ── State ──
+let db, board;
+let gameId=null, myColor=null, chess=null, gs=null;
+let unsub=null, ticker=null, selSq=null, validTargets=[], pendingPromo=null;
 
-// ================================================================
-// STATE
-// ================================================================
-let db;
-let gameId = null;
-let myColor = null;      // 'w' | 'b' | null (spectator)
-let chess = null;
-let gs = null;           // game state snapshot
-let unsub = null;
-let ticker = null;
-let selSq = null;
-let validTargets = [];
-let pendingPromo = null;
-
-// ================================================================
-// FIREBASE INIT
-// ================================================================
-try { firebase.initializeApp(FIREBASE_CONFIG); } catch(e) {}
+try{ firebase.initializeApp(FIREBASE_CONFIG); }catch(e){}
 db = firebase.firestore();
 
-// ================================================================
-// HOME — time control selection
-// ================================================================
+// ── Home ──
 let chosenMs = 600000;
-document.querySelectorAll('.time-btn').forEach(b => {
-  b.addEventListener('click', () => {
-    document.querySelectorAll('.time-btn').forEach(x => x.classList.remove('sel'));
-    b.classList.add('sel');
-    chosenMs = parseInt(b.dataset.ms);
-  });
-});
-
+document.querySelectorAll('.tbtn').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.tbtn').forEach(x=>x.classList.remove('sel'));
+  b.classList.add('sel'); chosenMs=parseInt(b.dataset.ms);
+}));
 document.getElementById('btn-create').addEventListener('click', createGame);
 document.getElementById('btn-join').addEventListener('click', () => {
-  const code = document.getElementById('join-input').value.trim().toUpperCase();
-  if (code.length < 4) return alert('Enter a valid game code.');
-  joinGame(code);
+  const c=document.getElementById('join-input').value.trim().toUpperCase();
+  if(c.length<4) return alert('Enter a valid game code.');
+  joinGame(c);
 });
+const urlG = new URLSearchParams(location.search).get('game');
+if(urlG) joinGame(urlG.toUpperCase());
 
-// Auto-join if URL has ?game=
-const urlGame = new URLSearchParams(location.search).get('game');
-if (urlGame) joinGame(urlGame.toUpperCase());
+// ── Create ──
+function genId(){ return Array.from({length:6},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.random()*32|0]).join(''); }
 
-// ================================================================
-// CREATE GAME
-// ================================================================
-function genId() {
-  const c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  return Array.from({length:6}, () => c[Math.random()*c.length|0]).join('');
-}
-
-async function createGame() {
-  const id = genId();
-  const data = {
-    fen: new Chess().fen(),
-    turn: 'w',
-    wMs: chosenMs, bMs: chosenMs,
-    timeCtrl: chosenMs,
-    timerOn: false,
-    turnAt: null,
-    status: 'waiting',
-    winner: null, winReason: null,
-    moves: [],
-    lastFrom: null, lastTo: null,
-    createdAt: Date.now()
-  };
-  try {
-    await db.collection('games').doc(id).set(data);
-    gameId = id; myColor = 'w';
-    localStorage.setItem('role_'+id, 'w');
-    pushUrl(id);
-    enterGame();
-  } catch(e) { alert('Firebase error — check config.\n'+e.message); }
-}
-
-// ================================================================
-// JOIN GAME
-// ================================================================
-async function joinGame(id) {
-  try {
-    const ref = db.collection('games').doc(id);
-    const snap = await ref.get();
-    if (!snap.exists) return alert('Game not found: ' + id);
-    const data = snap.data();
-
-    const saved = localStorage.getItem('role_'+id);
-    if (saved) {
-      gameId = id; myColor = saved;
-      pushUrl(id); enterGame(); return;
-    }
-
-    if (data.status === 'waiting') {
-      await ref.update({ status: 'active' });
-      gameId = id; myColor = 'b';
-      localStorage.setItem('role_'+id, 'b');
-    } else {
-      gameId = id; myColor = null; // spectator
-    }
+async function createGame(){
+  const id=genId();
+  try{
+    await db.collection('games').doc(id).set({
+      fen:new Chess().fen(), turn:'w', wMs:chosenMs, bMs:chosenMs, timeCtrl:chosenMs,
+      timerOn:false, turnAt:null, status:'waiting', winner:null, winReason:null,
+      moves:[], lastFrom:null, lastTo:null, createdAt:Date.now()
+    });
+    gameId=id; myColor='w';
+    localStorage.setItem('role_'+id,'w');
     pushUrl(id); enterGame();
-  } catch(e) { alert('Join failed.\n'+e.message); }
+  }catch(e){ alert('Firebase error — check config.\n'+e.message); }
 }
 
-function pushUrl(id) {
-  const u = new URL(location.href);
-  u.searchParams.set('game', id);
-  history.pushState({}, '', u);
+// ── Join ──
+async function joinGame(id){
+  try{
+    const ref=db.collection('games').doc(id);
+    const snap=await ref.get();
+    if(!snap.exists) return alert('Game not found: '+id);
+    const saved=localStorage.getItem('role_'+id);
+    if(saved){ gameId=id; myColor=saved; pushUrl(id); enterGame(); return; }
+    if(snap.data().status==='waiting'){
+      await ref.update({status:'active'});
+      gameId=id; myColor='b';
+      localStorage.setItem('role_'+id,'b');
+    } else { gameId=id; myColor=null; }
+    pushUrl(id); enterGame();
+  }catch(e){ alert('Join failed.\n'+e.message); }
 }
 
-// ================================================================
-// ENTER GAME VIEW
-// ================================================================
-function enterGame() {
+function pushUrl(id){
+  const u=new URL(location.href); u.searchParams.set('game',id); history.pushState({},'',u);
+}
+
+// ── Enter game ──
+function enterGame(){
   document.getElementById('view-home').classList.add('hidden');
   document.getElementById('view-game').classList.remove('hidden');
 
-  const iW = myColor === 'w';
-  const myClr = iW ? 'white' : (myColor === 'b' ? 'black' : '—');
-  const opClr = iW ? 'black' : 'white';
+  const isW=myColor==='w';
+  document.getElementById('gid-label').textContent=gameId;
+  document.getElementById('color-label').textContent=myColor ? 'You are '+(isW?'White':'Black') : 'Spectating';
 
-  document.getElementById('gid-label').textContent = gameId;
-  document.getElementById('color-label').textContent = myColor ? `You are ${myClr}` : 'Spectating';
-  document.getElementById('lbl-me').textContent = `You (${myClr})`;
-  document.getElementById('lbl-opp').textContent = `Opponent (${opClr})`;
-  document.getElementById('dot-me').className = `dot ${myColor||'w'}`;
-  document.getElementById('dot-opp').className = `dot ${iW?'b':'w'}`;
+  // Avatars
+  const me=document.getElementById('av-me'), op=document.getElementById('av-opp');
+  me.textContent=isW?'♔':'♚'; me.className='av '+(isW?'av-w':'av-b');
+  op.textContent=isW?'♚':'♔'; op.className='av '+(isW?'av-b':'av-w');
+  document.getElementById('pname-me').textContent='You ('+(isW?'White':'Black')+')';
+  document.getElementById('pname-opp').textContent='Opponent ('+(isW?'Black':'White')+')';
 
-  document.getElementById('gid-label').onclick = () => copyText(gameId);
-  document.getElementById('btn-share').onclick = () => {
+  // Board
+  const sz=Math.min(512, window.innerWidth-32);
+  document.getElementById('board-wrap').style.width=sz+'px';
+  board=Chessboard('chessboard',{
+    position:'start',
+    orientation:myColor==='b'?'black':'white',
+    draggable:true,
+    pieceTheme:PIECES,
+    showNotation:true,
+    onDragStart,onDrop,onSnapEnd,
+    onMouseoverSquare:onHover,
+    onMouseoutSquare:onHoverOut
+  });
+
+  // Click-to-move
+  document.getElementById('board-wrap').addEventListener('click', e=>{
+    const sq=e.target.closest('[data-square]');
+    if(sq) onSqClick(sq.dataset.square);
+  });
+
+  document.getElementById('gid-label').onclick=()=>copyText(gameId);
+  document.getElementById('btn-share').onclick=()=>{
     copyText(location.href);
-    document.getElementById('btn-share').textContent = '✓ Copied!';
-    setTimeout(() => document.getElementById('btn-share').textContent = '📋 Copy invite link', 2000);
+    document.getElementById('btn-share').textContent='✓ Copied!';
+    setTimeout(()=>document.getElementById('btn-share').textContent='📋  Copy invite link',2000);
   };
-  document.getElementById('btn-start').onclick = startTimer;
-  document.getElementById('btn-resign').onclick = resign;
-  document.getElementById('btn-newgame').onclick = () => {
-    history.pushState({}, '', location.pathname);
-    location.reload();
-  };
+  document.getElementById('btn-start').onclick=startTimer;
+  document.getElementById('btn-resign').onclick=resign;
+  document.getElementById('btn-new').onclick=()=>{ location.href=location.pathname; };
 
-  unsub = db.collection('games').doc(gameId).onSnapshot(snap => {
-    if (snap.exists) { gs = snap.data(); onUpdate(); }
+  unsub=db.collection('games').doc(gameId).onSnapshot(snap=>{
+    if(snap.exists){ gs=snap.data(); onUpdate(); }
   });
 }
 
-function copyText(t) {
-  navigator.clipboard.writeText(t).catch(() => prompt('Copy this:', t));
+function copyText(t){ navigator.clipboard.writeText(t).catch(()=>prompt('Copy:',t)); }
+
+// ── Update ──
+function onUpdate(){
+  chess=new Chess(); chess.load(gs.fen);
+  board.position(gs.fen,false);
+  board.orientation(myColor==='b'?'black':'white');
+  applyHL(); renderOverlay(); renderTimers(); renderSbar(); renderHistory(); renderPbars();
+  if(gs.timerOn&&gs.status==='active'){
+    if(!ticker) ticker=setInterval(renderTimers,400);
+  } else { clearInterval(ticker); ticker=null; renderTimers(); }
 }
 
-// ================================================================
-// GAME UPDATE HANDLER
-// ================================================================
-function onUpdate() {
-  chess = new Chess();
-  chess.load(gs.fen);
-  renderBoard();
-  renderOverlay();
-  renderTimers();
-  renderStatus();
-  renderHistory();
-  renderPlayerBars();
+// ── Overlay ──
+function renderOverlay(){
+  const ov=document.getElementById('overlay');
+  const icon=document.getElementById('ov-icon'), title=document.getElementById('ov-title');
+  const sub=document.getElementById('ov-sub'), last=document.getElementById('ov-last');
+  const startBtn=document.getElementById('btn-start');
+  last.classList.add('hidden'); startBtn.classList.add('hidden');
 
-  // Manage live tick
-  if (gs.timerOn && gs.status === 'active') {
-    if (!ticker) ticker = setInterval(renderTimers, 400);
-  } else {
-    clearInterval(ticker); ticker = null;
-    renderTimers(); // final update
-  }
-}
-
-// ================================================================
-// RENDER OVERLAY
-// ================================================================
-function renderOverlay() {
-  const ov = document.getElementById('overlay');
-  const icon = document.getElementById('ov-icon');
-  const title = document.getElementById('ov-title');
-  const sub = document.getElementById('ov-sub');
-  const startBtn = document.getElementById('btn-start');
-
-  startBtn.classList.add('hidden');
-
-  if (gs.status === 'finished') {
-    ov.classList.remove('hidden');
-    icon.textContent = '🏁';
-    if (gs.winner === 'draw') {
-      title.textContent = 'Draw';
-      sub.textContent = gs.winReason || '';
-    } else if (gs.winner === myColor) {
-      title.textContent = 'You win! 🎉';
-      sub.textContent = gs.winReason || '';
-    } else {
-      title.textContent = 'You lose.';
-      sub.textContent = gs.winReason || '';
-    }
-    document.getElementById('btn-newgame').classList.remove('hidden');
+  if(gs.status==='finished'){
+    ov.classList.remove('hidden'); icon.textContent='🏁';
+    title.textContent=gs.winner==='draw'?'Draw!':(gs.winner===myColor?'🎉 You win!':'You lose.');
+    sub.textContent=gs.winReason||'';
+    document.getElementById('btn-new').classList.remove('hidden');
     document.getElementById('btn-resign').classList.add('hidden');
     return;
   }
-
-  if (gs.status === 'waiting') {
-    ov.classList.remove('hidden');
-    icon.textContent = '🔗';
-    title.textContent = 'Waiting for opponent';
-    sub.textContent = 'Share the invite link below so your friend can join as Black.';
+  if(gs.status==='waiting'){
+    ov.classList.remove('hidden'); icon.textContent='🔗';
+    title.textContent='Waiting for opponent';
+    sub.textContent='Share the invite link so your friend can join as Black.';
     return;
   }
-
-  const myTurn = gs.turn === myColor;
-
-  if (!myTurn) {
-    ov.classList.remove('hidden');
-    icon.textContent = '⏳';
-    title.textContent = (gs.turn === 'w' ? 'White' : 'Black') + '\'s turn';
-    sub.textContent = gs.lastTo
-      ? `Last move ended on ${gs.lastTo}`
-      : 'Your opponent hasn\'t moved yet.';
+  if(gs.turn!==myColor){
+    ov.classList.remove('hidden'); icon.textContent='⏳';
+    title.textContent=(gs.turn==='w'?'White':'Black')+"'s turn";
+    sub.textContent="Come back when it's your turn. The board stays hidden to keep the game fair.";
+    if(gs.lastTo){ last.textContent='Last move: '+gs.lastFrom+'→'+gs.lastTo; last.classList.remove('hidden'); }
     return;
   }
-
-  // My turn
-  if (!gs.timerOn) {
-    ov.classList.remove('hidden');
-    icon.textContent = '🎯';
-    title.textContent = 'Your turn!';
-    sub.textContent = 'Press Start to begin your clock and reveal the board.';
+  if(!gs.timerOn){
+    ov.classList.remove('hidden'); icon.textContent='🎯';
+    title.textContent='Your turn!';
+    sub.textContent='Start your clock to reveal the board. Your time only runs while the board is visible.';
     startBtn.classList.remove('hidden');
     return;
   }
-
-  // My turn + timer running → hide overlay, show board
   ov.classList.add('hidden');
 }
 
-// ================================================================
-// RENDER TIMERS
-// ================================================================
-function renderTimers() {
-  if (!gs) return;
-  let wMs = gs.wMs, bMs = gs.bMs;
-  if (gs.timerOn && gs.turnAt) {
-    const e = Date.now() - gs.turnAt;
-    if (gs.turn === 'w') wMs = Math.max(0, wMs - e);
-    else bMs = Math.max(0, bMs - e);
+// ── Timers ──
+function renderTimers(){
+  if(!gs) return;
+  let wMs=gs.wMs, bMs=gs.bMs;
+  if(gs.timerOn&&gs.turnAt){
+    const e=Date.now()-gs.turnAt;
+    if(gs.turn==='w') wMs=Math.max(0,wMs-e); else bMs=Math.max(0,bMs-e);
   }
-  const meMs = myColor === 'w' ? wMs : bMs;
-  const opMs = myColor === 'w' ? bMs : wMs;
-
-  function fmt(ms) {
-    const s = Math.max(0, Math.ceil(ms/1000));
-    return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
-  }
-
-  const tMe = document.getElementById('t-me');
-  const tOp = document.getElementById('t-opp');
-  tMe.textContent = fmt(meMs);
-  tOp.textContent = fmt(opMs);
-  tMe.className = 'timer' + (meMs < 30000 ? ' low' : '');
-  tOp.className = 'timer' + (opMs < 30000 ? ' low' : '');
-
-  // Auto timeout detection
-  if (gs.timerOn && gs.status === 'active' && gs.turn === myColor && meMs <= 0) {
-    doTimeout();
-  }
+  const meMs=myColor==='w'?wMs:bMs, opMs=myColor==='w'?bMs:wMs;
+  const fmt=ms=>{ const s=Math.max(0,Math.ceil(ms/1000)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
+  const tMe=document.getElementById('t-me'), tOp=document.getElementById('t-opp');
+  tMe.textContent=myColor?fmt(meMs):'—'; tOp.textContent=fmt(opMs);
+  tMe.className='timer'+(meMs<30000?' danger':'');
+  tOp.className='timer'+(opMs<30000?' danger':'');
+  if(gs.timerOn&&gs.status==='active'&&gs.turn===myColor&&meMs<=0) doTimeout();
 }
 
-async function doTimeout() {
-  clearInterval(ticker); ticker = null;
-  const opp = myColor === 'w' ? 'b' : 'w';
+async function doTimeout(){
+  clearInterval(ticker); ticker=null;
   await db.collection('games').doc(gameId).update({
-    status:'finished', winner:opp,
-    winReason:(myColor==='w'?'White':'Black')+' ran out of time',
-    timerOn:false
+    status:'finished', winner:myColor==='w'?'b':'w',
+    winReason:(myColor==='w'?'White':'Black')+' ran out of time', timerOn:false
   }).catch(()=>{});
 }
 
-// ================================================================
-// RENDER BOARD
-// ================================================================
-function renderBoard() {
-  const el = document.getElementById('board');
-  el.innerHTML = '';
-  const flip = myColor === 'b';
+// ── Player bars ──
+function renderPbars(){
+  const myT=gs.turn===myColor&&gs.status==='active';
+  document.getElementById('bar-me').classList.toggle('active-bar',myT);
+  document.getElementById('bar-opp').classList.toggle('active-bar',!myT&&gs.status==='active');
+}
 
-  for (let r = 0; r < 8; r++) {
-    for (let c = 0; c < 8; c++) {
-      const sq = sqName(r, c, flip);
-      const piece = chess.get(sq);
-      const lite = (sq.charCodeAt(0)-97 + parseInt(sq[1])-1) % 2 === 1;
+// ── Highlights ──
+function getSq(sq){ return document.querySelector(`.square-55d63[data-square="${sq}"]`); }
+function applyHL(){
+  document.querySelectorAll('.square-55d63').forEach(el=>el.classList.remove('hl-sel','hl-mv','hl-cap','hl-lf','hl-lt'));
+  if(gs?.lastFrom) getSq(gs.lastFrom)?.classList.add('hl-lf');
+  if(gs?.lastTo) getSq(gs.lastTo)?.classList.add('hl-lt');
+  if(selSq) getSq(selSq)?.classList.add('hl-sel');
+  validTargets.forEach(sq=>{ const el=getSq(sq); if(el) el.classList.add(chess.get(sq)?'hl-cap':'hl-mv'); });
+}
 
-      const div = document.createElement('div');
-      div.className = `sq ${lite?'lt':'dk'}`;
-      div.dataset.sq = sq;
-
-      if (sq === selSq) div.classList.add('sel');
-      if (sq === gs.lastFrom) div.classList.add('lf');
-      if (sq === gs.lastTo) div.classList.add('lt2');
-      if (chess.in_check() && piece && piece.type==='k' && piece.color===chess.turn())
-        div.classList.add('chk');
-      if (validTargets.includes(sq))
-        div.classList.add(piece ? 'vc' : 'vm');
-
-      if (piece) div.textContent = SYM[piece.color + piece.type.toUpperCase()];
-      div.onclick = () => onSqClick(sq);
-      el.appendChild(div);
+// ── Drag ──
+function onDragStart(source,piece){
+  if(!myColor||gs?.status!=='active'||gs.turn!==myColor||!gs.timerOn) return false;
+  if(myColor==='w'&&piece.startsWith('b')) return false;
+  if(myColor==='b'&&piece.startsWith('w')) return false;
+  return true;
+}
+function onDrop(source,target){
+  if(source===target) return 'snapback';
+  const mp=chess.get(source);
+  if(mp?.type==='p'){
+    const r=parseInt(target[1]);
+    if((myColor==='w'&&r===8)||(myColor==='b'&&r===1)){
+      const t=chess.move({from:source,to:target,promotion:'q'}); if(!t) return 'snapback';
+      chess.undo(); pendingPromo={from:source,to:target}; showPromo(); return 'snapback';
     }
   }
+  const mv=chess.move({from:source,to:target}); if(!mv) return 'snapback';
+  chess.undo(); selSq=null; validTargets=[];
+  doMove(source,target,null);
+}
+function onSnapEnd(){ if(chess){ board.position(chess.fen(),false); applyHL(); } }
+
+function onHover(sq){
+  if(!myColor||gs?.status!=='active'||gs.turn!==myColor||!gs.timerOn) return;
+  const p=chess.get(sq);
+  if(p&&p.color===myColor){
+    chess.moves({square:sq,verbose:true}).forEach(m=>{
+      const el=getSq(m.to); if(el) el.classList.add(chess.get(m.to)?'hl-cap':'hl-mv');
+    });
+  }
+}
+function onHoverOut(){
+  document.querySelectorAll('.square-55d63').forEach(el=>el.classList.remove('hl-mv','hl-cap'));
+  validTargets.forEach(sq=>{ const el=getSq(sq); if(el) el.classList.add(chess.get(sq)?'hl-cap':'hl-mv'); });
 }
 
-function sqName(r, c, flip) {
-  const f = 'abcdefgh';
-  return (flip ? f[7-c] : f[c]) + (flip ? r+1 : 8-r);
-}
-
-// ================================================================
-// SQUARE CLICK
-// ================================================================
-function onSqClick(sq) {
-  if (!myColor || gs.status !== 'active') return;
-  if (gs.turn !== myColor || !gs.timerOn) return;
-
-  const piece = chess.get(sq);
-
-  if (!selSq) {
-    if (piece && piece.color === myColor) {
-      selSq = sq;
-      validTargets = chess.moves({square:sq, verbose:true}).map(m=>m.to);
-      renderBoard();
+// ── Click to move ──
+function onSqClick(sq){
+  if(!myColor||gs?.status!=='active'||gs.turn!==myColor||!gs.timerOn) return;
+  const piece=chess.get(sq);
+  if(!selSq){
+    if(piece&&piece.color===myColor){
+      selSq=sq; validTargets=chess.moves({square:sq,verbose:true}).map(m=>m.to); applyHL();
     }
     return;
   }
-
-  if (sq === selSq) {
-    selSq = null; validTargets = [];
-    renderBoard(); return;
-  }
-
-  if (validTargets.includes(sq)) {
-    const mp = chess.get(selSq);
-    const toRank = parseInt(sq[1]);
-    if (mp.type==='p' && ((myColor==='w'&&toRank===8)||(myColor==='b'&&toRank===1))) {
-      pendingPromo = {from:selSq, to:sq};
-      selSq=null; validTargets=[];
-      showPromo(); return;
+  if(sq===selSq){ selSq=null; validTargets=[]; applyHL(); return; }
+  if(validTargets.includes(sq)){
+    const mp=chess.get(selSq), r=parseInt(sq[1]);
+    if(mp?.type==='p'&&((myColor==='w'&&r===8)||(myColor==='b'&&r===1))){
+      pendingPromo={from:selSq,to:sq}; selSq=null; validTargets=[]; applyHL(); showPromo(); return;
     }
-    doMove(selSq, sq, null);
-  } else if (piece && piece.color === myColor) {
-    selSq = sq;
-    validTargets = chess.moves({square:sq, verbose:true}).map(m=>m.to);
-    renderBoard();
-  } else {
-    selSq=null; validTargets=[];
-    renderBoard();
-  }
+    const f=selSq,t=sq; selSq=null; validTargets=[]; applyHL(); doMove(f,t,null);
+  } else if(piece&&piece.color===myColor){
+    selSq=sq; validTargets=chess.moves({square:sq,verbose:true}).map(m=>m.to); applyHL();
+  } else { selSq=null; validTargets=[]; applyHL(); }
 }
 
-// ================================================================
-// MAKE MOVE
-// ================================================================
-async function doMove(from, to, promo) {
-  const mv = chess.move({from, to, promotion: promo||undefined});
-  if (!mv) return;
-
-  const elapsed = gs.turnAt ? Date.now() - gs.turnAt : 0;
-  const myKey = myColor==='w' ? 'wMs' : 'bMs';
-  const newTime = Math.max(0, gs[myKey] - elapsed);
-
-  let status='active', winner=null, winReason=null;
-  if (newTime<=0) {
-    status='finished'; winner=myColor==='w'?'b':'w';
-    winReason=(myColor==='w'?'White':'Black')+' ran out of time';
-  } else if (chess.in_checkmate()) {
-    status='finished'; winner=myColor; winReason='Checkmate';
-  } else if (chess.in_stalemate()) {
-    status='finished'; winner='draw'; winReason='Stalemate';
-  } else if (chess.in_draw()) {
-    status='finished'; winner='draw';
-    winReason=chess.insufficient_material()?'Insufficient material':
-              chess.in_threefold_repetition()?'Threefold repetition':'50-move rule';
-  }
-
-  selSq=null; validTargets=[];
-
+// ── Make move ──
+async function doMove(from,to,promo){
+  const mv=chess.move({from,to,promotion:promo||undefined}); if(!mv) return;
+  const elapsed=gs.turnAt?Date.now()-gs.turnAt:0;
+  const myKey=myColor==='w'?'wMs':'bMs';
+  const newTime=Math.max(0,gs[myKey]-elapsed);
+  let status='active',winner=null,winReason=null;
+  if(newTime<=0){ status='finished'; winner=myColor==='w'?'b':'w'; winReason=(myColor==='w'?'White':'Black')+' ran out of time'; }
+  else if(chess.in_checkmate()){ status='finished'; winner=myColor; winReason='Checkmate'; }
+  else if(chess.in_stalemate()){ status='finished'; winner='draw'; winReason='Stalemate'; }
+  else if(chess.in_draw()){ status='finished'; winner='draw'; winReason=chess.insufficient_material()?'Insufficient material':chess.in_threefold_repetition()?'Threefold repetition':'50-move rule'; }
   await db.collection('games').doc(gameId).update({
-    fen: chess.fen(),
-    turn: chess.turn(),
-    [myKey]: newTime,
-    timerOn: false,
-    turnAt: null,
-    status, winner, winReason,
-    moves: firebase.firestore.FieldValue.arrayUnion(mv.san),
-    lastFrom: from,
-    lastTo: to
-  }).catch(e => alert('Save failed: '+e.message));
+    fen:chess.fen(), turn:chess.turn(), [myKey]:newTime,
+    timerOn:false, turnAt:null, status, winner, winReason,
+    moves:firebase.firestore.FieldValue.arrayUnion(mv.san),
+    lastFrom:from, lastTo:to
+  }).catch(e=>alert('Save failed: '+e.message));
 }
 
-// ================================================================
-// PROMOTION MODAL
-// ================================================================
-function showPromo() {
-  const row = document.getElementById('promo-row');
-  row.innerHTML = '';
-  ['Q','R','B','N'].forEach(t => {
-    const b = document.createElement('button');
-    b.className='pbtn';
-    b.textContent = SYM[myColor+t];
-    b.onclick = () => {
-      document.getElementById('promo-modal').classList.add('hidden');
-      doMove(pendingPromo.from, pendingPromo.to, t.toLowerCase());
-      pendingPromo=null;
-    };
-    row.appendChild(b);
+// ── Promo ──
+function showPromo(){
+  const row=document.getElementById('promo-row'); row.innerHTML='';
+  ['Q','R','B','N'].forEach(t=>{
+    const btn=document.createElement('button'); btn.className='ppbtn';
+    const img=document.createElement('img'); img.src=PIECES.replace('{piece}',myColor+t);
+    btn.appendChild(img);
+    btn.onclick=()=>{ document.getElementById('promo-modal').classList.add('hidden'); doMove(pendingPromo.from,pendingPromo.to,t.toLowerCase()); pendingPromo=null; };
+    row.appendChild(btn);
   });
   document.getElementById('promo-modal').classList.remove('hidden');
 }
 
-// ================================================================
-// START TIMER
-// ================================================================
-async function startTimer() {
-  if (!myColor || gs.turn!==myColor || gs.timerOn) return;
-  await db.collection('games').doc(gameId).update({
-    timerOn: true,
-    turnAt: Date.now()
-  }).catch(e=>alert('Could not start timer: '+e.message));
+// ── Start timer ──
+async function startTimer(){
+  if(!myColor||gs.turn!==myColor||gs.timerOn) return;
+  await db.collection('games').doc(gameId).update({timerOn:true,turnAt:Date.now()}).catch(e=>alert('Could not start timer: '+e.message));
 }
 
-// ================================================================
-// RESIGN
-// ================================================================
-async function resign() {
-  if (!myColor || gs.status==='finished') return;
-  if (!confirm('Resign this game?')) return;
-  const opp = myColor==='w'?'b':'w';
+// ── Resign ──
+async function resign(){
+  if(!myColor||gs.status==='finished') return;
+  if(!confirm('Resign this game?')) return;
   await db.collection('games').doc(gameId).update({
-    status:'finished', winner:opp,
-    winReason:(myColor==='w'?'White':'Black')+' resigned',
-    timerOn:false
+    status:'finished', winner:myColor==='w'?'b':'w',
+    winReason:(myColor==='w'?'White':'Black')+' resigned', timerOn:false
   });
 }
 
-// ================================================================
-// STATUS BAR
-// ================================================================
-function renderStatus() {
-  const bar = document.getElementById('status-bar');
-  if (!gs || gs.status==='finished') { bar.textContent=''; return; }
-  if (chess.in_check()) {
-    bar.textContent = `⚠️ ${chess.turn()==='w'?'White':'Black'} is in check`;
-  } else if (gs.turn===myColor && gs.timerOn) {
-    bar.textContent = '⏱ Your clock is running — make your move!';
-  } else {
-    bar.textContent = '';
-  }
+// ── Status bar ──
+function renderSbar(){
+  const b=document.getElementById('sbar');
+  if(!gs||gs.status==='finished'){ b.textContent=''; b.className='sbar'; return; }
+  if(chess.in_check()){ b.textContent='⚠️ '+(chess.turn()==='w'?'White':'Black')+' is in check!'; b.className='sbar chk'; }
+  else if(gs.turn===myColor&&gs.timerOn){ b.textContent='⏱ Your clock is running — make your move!'; b.className='sbar warn'; }
+  else{ b.textContent=''; b.className='sbar'; }
 }
 
-// ================================================================
-// PLAYER BARS
-// ================================================================
-function renderPlayerBars() {
-  const myTurn = gs.turn===myColor && gs.status==='active';
-  document.getElementById('bar-me').classList.toggle('active-turn', myTurn);
-  document.getElementById('bar-opp').classList.toggle('active-turn', !myTurn && gs.status==='active');
-}
-
-// ================================================================
-// MOVE HISTORY
-// ================================================================
-function renderHistory() {
-  const grid = document.getElementById('hist-grid');
-  const moves = gs.moves || [];
-  grid.innerHTML = '';
-  for (let i=0; i<moves.length; i+=2) {
+// ── History ──
+function renderHistory(){
+  const grid=document.getElementById('mgrid'); const moves=gs.moves||[];
+  grid.innerHTML='';
+  for(let i=0;i<moves.length;i+=2){
     const n=document.createElement('span'); n.className='mn'; n.textContent=(i/2+1)+'.';
     const w=document.createElement('span'); w.className='ms'; w.textContent=moves[i]||'';
     const b=document.createElement('span'); b.className='ms'; b.textContent=moves[i+1]||'';
     grid.append(n,w,b);
   }
-  grid.parentElement.scrollTop = grid.parentElement.scrollHeight;
+  grid.parentElement.scrollTop=grid.parentElement.scrollHeight;
 }
 </script>
 </body>
