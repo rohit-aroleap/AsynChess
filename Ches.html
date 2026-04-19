@@ -328,7 +328,7 @@ body{
 <div class="hdr">
   <div class="hdr-logo"><span class="hdr-logo-dot">♞</span>AsynChess</div>
   <h1>Play chess, on your schedule.</h1>
-  <p class="ver">v1.004</p>
+  <p class="ver">v1.005</p>
   <p class="tag">A chess clock that only ticks while you're looking. Spread one game across days.</p>
 </div>
 
@@ -397,10 +397,6 @@ body{
     <button class="btn-resign" id="btn-resign">Resign</button>
   </div>
 
-  <div class="hist">
-    <div class="hlabel">Moves</div>
-    <div class="mgrid" id="mgrid"></div>
-  </div>
 </div>
 
 <!-- Promotion -->
@@ -542,7 +538,7 @@ function onUpdate(){
   chess=new Chess(); chess.load(gs.fen);
   board.position(gs.fen,false);
   board.orientation(myColor==='b'?'black':'white');
-  applyHL(); renderOverlay(); renderTimers(); renderSbar(); renderHistory(); renderPbars();
+  applyHL(); renderOverlay(); renderTimers(); renderSbar(); renderPbars();
   if(gs.timerOn&&gs.status==='active'){
     if(!ticker) ticker=setInterval(renderTimers,400);
   } else { clearInterval(ticker); ticker=null; renderTimers(); }
@@ -738,17 +734,6 @@ function renderSbar(){
   else{ b.textContent=''; b.className='sbar'; }
 }
 
-function renderHistory(){
-  const grid=document.getElementById('mgrid'); const moves=gs.moves||[];
-  grid.innerHTML='';
-  for(let i=0;i<moves.length;i+=2){
-    const n=document.createElement('span'); n.className='mn'; n.textContent=(i/2+1)+'.';
-    const w=document.createElement('span'); w.className='ms'; w.textContent=moves[i]||'';
-    const b=document.createElement('span'); b.className='ms'; b.textContent=moves[i+1]||'';
-    grid.append(n,w,b);
-  }
-  grid.parentElement.scrollTop=grid.parentElement.scrollHeight;
-}
 </script>
 </body>
 </html>
